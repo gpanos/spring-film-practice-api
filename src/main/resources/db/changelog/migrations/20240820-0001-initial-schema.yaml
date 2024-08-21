@@ -4,6 +4,34 @@ databaseChangeLog:
       author: Dimitrios
       changes:
         - createTable:
+            tableName: genre
+            columns:
+              - column:
+                  name: id
+                  type: INTEGER
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: DATETIME
+              - column:
+                  name: updated_at
+                  type: DATETIME
+
+  - changeSet:
+      id: 2
+      author: Dimitrios
+      changes:
+        - createTable:
             tableName: film
             columns:
               - column:
@@ -21,3 +49,16 @@ databaseChangeLog:
               - column:
                   name: description
                   type: TEXT
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: genre_id
+                  type: INTEGER

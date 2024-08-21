@@ -15,4 +15,6 @@ public class FilmDTO {
     private String title;
 
     private String description;
+
+    private GenreDTO genre;
 }
