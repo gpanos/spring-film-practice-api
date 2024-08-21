@@ -1,6 +1,7 @@
 package com.example.spring_film_api.controller;
 
 import com.example.spring_film_api.factory.FilmFactory;
+import com.example.spring_film_api.model.Film;
 import com.example.spring_film_api.repository.FilmRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,5 +39,18 @@ public class FilmControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(jsonPath("$", hasSize(2))); // Ensure two films are returned
+    }
+
+    @Test
+    @Transactional
+    void shouldReturnTheDetailsOfFilm() throws Exception {
+        Film film = filmRepository.save(FilmFactory.createFilm());
+
+        mockMvc.perform(get("/films/" + film.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"))
+            .andExpect(jsonPath("$.id", is(film.getId().intValue())))
+            .andExpect(jsonPath("$.title", is(film.getTitle())))
+            .andExpect(jsonPath("$.description", is(film.getDescription())));
     }
 }
