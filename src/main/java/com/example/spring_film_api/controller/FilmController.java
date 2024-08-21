@@ -5,6 +5,9 @@ import com.example.spring_film_api.model.Film;
 import com.example.spring_film_api.query.GetAllFilmsQuery;
 import com.example.spring_film_api.query.GetFilmByIdQuery;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,8 +33,12 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<FilmDTO> index() {
-        return getAllFilmsQuery.execute();
+    public Page<FilmDTO> index(
+        @RequestParam(required = false, name = "genres") Optional<List<String>> genres,
+        @RequestParam(required = false) Optional<String> title,
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return getAllFilmsQuery.execute(genres, title, pageable);
     }
 
     @GetMapping("/{id}")

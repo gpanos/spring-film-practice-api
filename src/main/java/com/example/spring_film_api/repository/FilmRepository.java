@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.lang.NonNull;
 
-public interface FilmRepository extends JpaRepository<Film, Long> {
+public interface FilmRepository extends JpaRepository<Film, Long>, JpaSpecificationExecutor<Film> {
     @EntityGraph(attributePaths = {"genre"})
     @NonNull
     List<Film> findAll();
