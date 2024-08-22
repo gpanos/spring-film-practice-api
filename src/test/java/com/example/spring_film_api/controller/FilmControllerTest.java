@@ -1,15 +1,19 @@
 package com.example.spring_film_api.controller;
 
+import com.example.spring_film_api.dto.CreateFilmRequest;
 import com.example.spring_film_api.factory.FilmFactory;
 import com.example.spring_film_api.model.Film;
 import com.example.spring_film_api.model.Genre;
 import com.example.spring_film_api.repository.FilmRepository;
 import com.example.spring_film_api.repository.GenreRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
@@ -33,6 +38,9 @@ public class FilmControllerTest {
 
     @Autowired
     private GenreRepository genreRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -139,5 +147,28 @@ public class FilmControllerTest {
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].title", is("Die Hard")))
             .andExpect(jsonPath("$.totalElements", is(1)));
+    }
+
+    @Test
+    @Transactional
+    void shouldStoreNewFilm() throws Exception {
+        Genre genre = new Genre();
+        genre.setTitle("Action");
+        genre = genreRepository.save(genre);
+
+        CreateFilmRequest request = new CreateFilmRequest();
+        request.setTitle("Die Hard");
+        request.setDescription("A great action movie");
+        request.setGenreId(genre.getId());
+
+        mockMvc.perform(post("/films")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.title").value("Die Hard"))
+            .andExpect(jsonPath("$.description").value("A great action movie"))
+            .andExpect(jsonPath("$.genre.title").value("Action"));
+
+
     }
 }

@@ -1,13 +1,17 @@
 package com.example.spring_film_api.controller;
 
+import com.example.spring_film_api.action.CreateFilmAction;
+import com.example.spring_film_api.dto.CreateFilmRequest;
 import com.example.spring_film_api.dto.FilmDTO;
-import com.example.spring_film_api.model.Film;
 import com.example.spring_film_api.query.GetAllFilmsQuery;
 import com.example.spring_film_api.query.GetFilmByIdQuery;
+
+import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +22,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 @RestController
@@ -26,10 +33,16 @@ public class FilmController {
 
     private final GetAllFilmsQuery getAllFilmsQuery;
     private final GetFilmByIdQuery getFilmByIdQuery;
+    private final CreateFilmAction createFilmAction;
 
-    public FilmController(GetAllFilmsQuery getAllFilmsQuery, GetFilmByIdQuery getFilmByIdQuery) {
+    public FilmController(
+        GetAllFilmsQuery getAllFilmsQuery, 
+        GetFilmByIdQuery getFilmByIdQuery, 
+        CreateFilmAction createFilmAction
+    ) {
         this.getAllFilmsQuery = getAllFilmsQuery;
         this.getFilmByIdQuery = getFilmByIdQuery;
+        this.createFilmAction = createFilmAction;
     }
 
     @GetMapping
@@ -48,4 +61,12 @@ public class FilmController {
             .map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    @PostMapping
+    public ResponseEntity<FilmDTO> store(@Valid @RequestBody CreateFilmRequest request) {
+        FilmDTO film = this.createFilmAction.execute(request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(film);
+    }
+    
 }
