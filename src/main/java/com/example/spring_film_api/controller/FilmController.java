@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,13 +42,9 @@ public class FilmController {
     private final UpdateFilmAction updateFilmAction;
     private final DeleteFilmAction deleteFilmAction;
 
-    public FilmController(
-        GetAllFilmsQuery getAllFilmsQuery, 
-        GetFilmByIdQuery getFilmByIdQuery, 
-        CreateFilmAction createFilmAction,
-        UpdateFilmAction updateFilmAction,
-        DeleteFilmAction deleteFilmAction
-    ) {
+    public FilmController(GetAllFilmsQuery getAllFilmsQuery, GetFilmByIdQuery getFilmByIdQuery,
+            CreateFilmAction createFilmAction, UpdateFilmAction updateFilmAction,
+            DeleteFilmAction deleteFilmAction) {
         this.getAllFilmsQuery = getAllFilmsQuery;
         this.getFilmByIdQuery = getFilmByIdQuery;
         this.createFilmAction = createFilmAction;
@@ -57,22 +54,20 @@ public class FilmController {
 
     @GetMapping
     public Page<FilmDTO> index(
-        @RequestParam(required = false, name = "genres") Optional<List<String>> genres,
-        @RequestParam(required = false) Optional<String> title,
-        @PageableDefault(size = 20) Pageable pageable
-    ) {
+            @RequestParam(required = false, name = "genres") Optional<List<String>> genres,
+            @RequestParam(required = false) Optional<String> title,
+            @PageableDefault(size = 20) Pageable pageable) {
         return getAllFilmsQuery.execute(genres, title, pageable);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<FilmDTO> show(@PathVariable Long id) {
-        return getFilmByIdQuery
-            .execute(id)
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        return getFilmByIdQuery.execute(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FilmDTO> store(@Valid @RequestBody SaveFilmRequest request) {
         FilmDTO film = this.createFilmAction.execute(request);
 
@@ -80,13 +75,16 @@ public class FilmController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<FilmDTO> update(@PathVariable Long id, @RequestBody SaveFilmRequest request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<FilmDTO> update(@PathVariable Long id,
+            @RequestBody SaveFilmRequest request) {
         FilmDTO film = this.updateFilmAction.execute(id, request);
 
         return ResponseEntity.ok(film);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> destroy(@PathVariable Long id) {
         this.deleteFilmAction.execute(id);
 

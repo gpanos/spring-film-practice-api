@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,28 +53,29 @@ public class FilmControllerTest {
 
     @Test
     @Transactional
+    @WithMockUser
     void shouldReturnListOfFilms() throws Exception {
         filmRepository.saveAll(List.of(FilmFactory.createFilm(), FilmFactory.createFilm()));
-        mockMvc.perform(get("/films"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.content", hasSize(2))); // Ensure two films are returned
+        mockMvc.perform(get("/films")).andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.content", hasSize(2))); // Ensure two films are returned
     }
 
     @Test
     @Transactional
+    @WithMockUser
     void shouldReturnTheDetailsOfFilm() throws Exception {
         Film film = filmRepository.save(FilmFactory.createFilm());
-        mockMvc.perform(get("/films/" + film.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.id", is(film.getId().intValue())))
-            .andExpect(jsonPath("$.title", is(film.getTitle())))
-            .andExpect(jsonPath("$.description", is(film.getDescription())));
+        mockMvc.perform(get("/films/" + film.getId())).andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.id", is(film.getId().intValue())))
+                .andExpect(jsonPath("$.title", is(film.getTitle())))
+                .andExpect(jsonPath("$.description", is(film.getDescription())));
     }
 
     @Test
     @Transactional
+    @WithMockUser
     void shouldFilterFilmsByGenre() throws Exception {
         Genre actionGenre = new Genre();
         actionGenre.setTitle("Action");
@@ -85,15 +87,15 @@ public class FilmControllerTest {
 
         filmRepository.save(FilmFactory.createFilm()); // Film without genre
 
-        mockMvc.perform(get("/films").param("genres", "Action"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.content", hasSize(1)))
-            .andExpect(jsonPath("$.content[0].genre.title", is("Action")));
+        mockMvc.perform(get("/films").param("genres", "Action")).andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].genre.title", is("Action")));
     }
 
     @Test
     @Transactional
+    @WithMockUser
     void shouldFilterFilmsByTitle() throws Exception {
         Film film1 = FilmFactory.createFilm();
         film1.setTitle("The Matrix");
@@ -101,28 +103,29 @@ public class FilmControllerTest {
         film2.setTitle("Inception");
         filmRepository.saveAll(List.of(film1, film2));
 
-        mockMvc.perform(get("/films").param("title", "matrix"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.content", hasSize(1)))
-            .andExpect(jsonPath("$.content[0].title", is("The Matrix")));
+        mockMvc.perform(get("/films").param("title", "matrix")).andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].title", is("The Matrix")));
     }
 
     @Test
     @Transactional
+    @WithMockUser
     void shouldPaginateResults() throws Exception {
-        filmRepository.saveAll(List.of(FilmFactory.createFilm(), FilmFactory.createFilm(), FilmFactory.createFilm()));
+        filmRepository.saveAll(List.of(FilmFactory.createFilm(), FilmFactory.createFilm(),
+                FilmFactory.createFilm()));
 
         mockMvc.perform(get("/films").param("page", "0").param("size", "2"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.content", hasSize(2)))
-            .andExpect(jsonPath("$.totalElements", is(3)))
-            .andExpect(jsonPath("$.totalPages", is(2)));
+                .andExpect(status().isOk()).andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.totalElements", is(3)))
+                .andExpect(jsonPath("$.totalPages", is(2)));
     }
 
     @Test
     @Transactional
+    @WithMockUser
     void shouldCombineFiltersAndPagination() throws Exception {
         Genre actionGenre = new Genre();
         actionGenre.setTitle("Action");
@@ -139,20 +142,17 @@ public class FilmControllerTest {
         film3.setGenre(actionGenre);
         filmRepository.saveAll(List.of(film1, film2, film3));
 
-        mockMvc.perform(get("/films")
-                .param("genres", "Action")
-                .param("title", "die")
-                .param("page", "0")
-                .param("size", "1"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.content", hasSize(1)))
-            .andExpect(jsonPath("$.content[0].title", is("Die Hard")))
-            .andExpect(jsonPath("$.totalElements", is(1)));
+        mockMvc.perform(get("/films").param("genres", "Action").param("title", "die")
+                .param("page", "0").param("size", "1")).andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].title", is("Die Hard")))
+                .andExpect(jsonPath("$.totalElements", is(1)));
     }
 
     @Test
     @Transactional
+    @WithMockUser(roles = "ADMIN")
     void shouldStoreNewFilm() throws Exception {
         Genre genre = new Genre();
         genre.setTitle("Action");
@@ -163,19 +163,18 @@ public class FilmControllerTest {
         request.setDescription("A great action movie");
         request.setGenreId(genre.getId());
 
-        mockMvc.perform(post("/films")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.title").value("Die Hard"))
-            .andExpect(jsonPath("$.description").value("A great action movie"))
-            .andExpect(jsonPath("$.genre.title").value("Action"));
+        mockMvc.perform(post("/films").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Die Hard"))
+                .andExpect(jsonPath("$.description").value("A great action movie"))
+                .andExpect(jsonPath("$.genre.title").value("Action"));
 
 
     }
 
     @Test
     @Transactional
+    @WithMockUser(roles = "ADMIN")
     void shouldUpdateFilm() throws Exception {
         Genre genre = new Genre();
         genre.setTitle("Action");
@@ -189,20 +188,18 @@ public class FilmControllerTest {
         request.setDescription("A great action movie");
         request.setGenreId(genre.getId());
 
-        mockMvc.perform(patch("/films/" + film.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.title").value("Die Hard"))
-            .andExpect(jsonPath("$.description").value("A great action movie"))
-            .andExpect(jsonPath("$.genre.title").value("Action"));
+        mockMvc.perform(patch("/films/" + film.getId()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Die Hard"))
+                .andExpect(jsonPath("$.description").value("A great action movie"))
+                .andExpect(jsonPath("$.genre.title").value("Action"));
     }
 
-    @Test 
+    @Test
     @Transactional
+    @WithMockUser(roles = "ADMIN")
     void shouldDeleteFilm() throws Exception {
         Film film = filmRepository.save(FilmFactory.createFilm());
-        mockMvc.perform(delete("/films/" + film.getId()))
-            .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/films/" + film.getId())).andExpect(status().isNoContent());
     }
 }

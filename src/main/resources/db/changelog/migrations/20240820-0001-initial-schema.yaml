@@ -1,6 +1,42 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: "create-user-table"
+      author: Dimitrios
+      changes:
+        - createTable:
+            tableName: "users"
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: password
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+
+  - changeSet:
+      id: "create-genre-table"
       author: Dimitrios
       changes:
         - createTable:
@@ -8,7 +44,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: INTEGER
+                  type: BIGINT
                   autoIncrement: true
                   constraints:
                     primaryKey: true
@@ -22,13 +58,13 @@ databaseChangeLog:
                   type: TEXT
               - column:
                   name: created_at
-                  type: DATETIME
+                  type: TIMESTAMP
               - column:
                   name: updated_at
-                  type: DATETIME
+                  type: TIMESTAMP
 
   - changeSet:
-      id: 2
+      id: "create-film-table"
       author: Dimitrios
       changes:
         - createTable:
@@ -36,7 +72,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: INTEGER
+                  type: BIGINT
                   autoIncrement: true
                   constraints:
                     primaryKey: true
@@ -51,14 +87,25 @@ databaseChangeLog:
                   type: TEXT
               - column:
                   name: created_at
-                  type: DATETIME
+                  type: TIMESTAMP
                   constraints:
                     nullable: false
               - column:
                   name: updated_at
-                  type: DATETIME
+                  type: TIMESTAMP
                   constraints:
                     nullable: false
               - column:
                   name: genre_id
-                  type: INTEGER
+                  type: BIGINT
+
+  - changeSet:
+      id: "add-foreign-key-constraint"
+      author: Dimitrios
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: genre_id
+            baseTableName: film
+            constraintName: fk_film_genre
+            referencedColumnNames: id
+            referencedTableName: genre
