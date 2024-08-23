@@ -1,6 +1,6 @@
 package com.example.spring_film_api.controller;
 
-import com.example.spring_film_api.dto.CreateFilmRequest;
+import com.example.spring_film_api.dto.SaveFilmRequest;
 import com.example.spring_film_api.factory.FilmFactory;
 import com.example.spring_film_api.model.Film;
 import com.example.spring_film_api.model.Genre;
@@ -20,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
@@ -156,7 +158,7 @@ public class FilmControllerTest {
         genre.setTitle("Action");
         genre = genreRepository.save(genre);
 
-        CreateFilmRequest request = new CreateFilmRequest();
+        SaveFilmRequest request = new SaveFilmRequest();
         request.setTitle("Die Hard");
         request.setDescription("A great action movie");
         request.setGenreId(genre.getId());
@@ -170,5 +172,37 @@ public class FilmControllerTest {
             .andExpect(jsonPath("$.genre.title").value("Action"));
 
 
+    }
+
+    @Test
+    @Transactional
+    void shouldUpdateFilm() throws Exception {
+        Genre genre = new Genre();
+        genre.setTitle("Action");
+        genre = genreRepository.save(genre);
+
+        Film film = FilmFactory.createFilm();
+        film = filmRepository.save(film);
+
+        SaveFilmRequest request = new SaveFilmRequest();
+        request.setTitle("Die Hard");
+        request.setDescription("A great action movie");
+        request.setGenreId(genre.getId());
+
+        mockMvc.perform(patch("/films/" + film.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.title").value("Die Hard"))
+            .andExpect(jsonPath("$.description").value("A great action movie"))
+            .andExpect(jsonPath("$.genre.title").value("Action"));
+    }
+
+    @Test 
+    @Transactional
+    void shouldDeleteFilm() throws Exception {
+        Film film = filmRepository.save(FilmFactory.createFilm());
+        mockMvc.perform(delete("/films/" + film.getId()))
+            .andExpect(status().isNoContent());
     }
 }

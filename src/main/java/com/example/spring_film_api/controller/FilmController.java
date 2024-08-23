@@ -1,7 +1,9 @@
 package com.example.spring_film_api.controller;
 
 import com.example.spring_film_api.action.CreateFilmAction;
-import com.example.spring_film_api.dto.CreateFilmRequest;
+import com.example.spring_film_api.action.DeleteFilmAction;
+import com.example.spring_film_api.action.UpdateFilmAction;
+import com.example.spring_film_api.dto.SaveFilmRequest;
 import com.example.spring_film_api.dto.FilmDTO;
 import com.example.spring_film_api.query.GetAllFilmsQuery;
 import com.example.spring_film_api.query.GetFilmByIdQuery;
@@ -13,7 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,15 +38,21 @@ public class FilmController {
     private final GetAllFilmsQuery getAllFilmsQuery;
     private final GetFilmByIdQuery getFilmByIdQuery;
     private final CreateFilmAction createFilmAction;
+    private final UpdateFilmAction updateFilmAction;
+    private final DeleteFilmAction deleteFilmAction;
 
     public FilmController(
         GetAllFilmsQuery getAllFilmsQuery, 
         GetFilmByIdQuery getFilmByIdQuery, 
-        CreateFilmAction createFilmAction
+        CreateFilmAction createFilmAction,
+        UpdateFilmAction updateFilmAction,
+        DeleteFilmAction deleteFilmAction
     ) {
         this.getAllFilmsQuery = getAllFilmsQuery;
         this.getFilmByIdQuery = getFilmByIdQuery;
         this.createFilmAction = createFilmAction;
+        this.updateFilmAction = updateFilmAction;
+        this.deleteFilmAction = deleteFilmAction;
     }
 
     @GetMapping
@@ -63,10 +73,23 @@ public class FilmController {
     }
 
     @PostMapping
-    public ResponseEntity<FilmDTO> store(@Valid @RequestBody CreateFilmRequest request) {
+    public ResponseEntity<FilmDTO> store(@Valid @RequestBody SaveFilmRequest request) {
         FilmDTO film = this.createFilmAction.execute(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(film);
     }
-    
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<FilmDTO> update(@PathVariable Long id, @RequestBody SaveFilmRequest request) {
+        FilmDTO film = this.updateFilmAction.execute(id, request);
+
+        return ResponseEntity.ok(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> destroy(@PathVariable Long id) {
+        this.deleteFilmAction.execute(id);
+
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Data
-public class CreateFilmRequest {
+public class SaveFilmRequest {
     @NotBlank(message = "Title is required")
     private String title;
 
