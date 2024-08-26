@@ -17,4 +17,6 @@ public class FilmDTO {
     private String description;
 
     private GenreDTO genre;
+
+    private Double averageRating;
 }

@@ -28,6 +28,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private ERole role;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Review> reviews;
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

@@ -109,3 +109,75 @@ databaseChangeLog:
             constraintName: fk_film_genre
             referencedColumnNames: id
             referencedTableName: genre
+  - changeSet:
+      id: "create-review-table"
+      author: Dimitrios
+      changes:
+        - createTable:
+            tableName: review
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_review_user
+                    references: users(id)
+              - column:
+                  name: film_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_review_film
+                    references: film(id)
+              - column:
+                  name: rating
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+  - changeSet:
+      id: "add-average-rating-to-film"
+      author: YourName
+      changes:
+        - addColumn:
+            tableName: film
+            columns:
+              - column:
+                  name: average_rating
+                  type: double
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: >
+              UPDATE film
+              SET average_rating = (
+                SELECT COALESCE(ROUND(AVG(rating)), 0)
+                FROM review
+                WHERE review.film_id = film.id
+              )
+
+      rollback:
+        - dropColumn:
+            tableName: film
+            columnName: average_rating
+
