@@ -27,5 +27,8 @@ public class Film extends BaseEntity {
 
     @Column(name = "average_rating", nullable = false)
     private Double averageRating = 0.0;
+
+    @Column(name = "cover_image", nullable = true)
+    private String coverImage;
 }
 

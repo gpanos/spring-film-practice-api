@@ -181,3 +181,21 @@ databaseChangeLog:
             tableName: film
             columnName: average_rating
 
+
+  - changeSet:
+      id: "add-cover-image-to-film"
+      author: Dimitrios
+      changes:
+        - addColumn:
+            tableName: film
+            columns:
+              - column:
+                  name: cover_image
+                  type: VARCHAR(255) 
+                  constraints:
+                    nullable: true
+
+      rollback:
+        - dropColumn:
+            tableName: film
+            columnName: cover_image
