@@ -199,3 +199,155 @@ databaseChangeLog:
         - dropColumn:
             tableName: film
             columnName: cover_image
+  - changeSet:
+      id: create-screening-table
+      author: Dimitrios
+      changes:
+        - createTable:
+            tableName: screening
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: film_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_screening_film
+                    references: film(id)
+              - column:
+                  name: start_time
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: auditorium
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: total_seats
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: available_seats
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ticket_price
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+  - changeSet:
+      id: create-purchase-table
+      author: Dimitrios
+      changes:
+        - createTable:
+            tableName: purchase
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: screening_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_ticket_screening
+                    references: screening(id)
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_ticket_user
+                    references: users(id)
+              - column:
+                  name: total_amount
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_paid
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+  - changeSet:
+      id: create-ticket-table
+      author: Dimitrios
+      changes:
+        - createTable:
+            tableName: ticket
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: purchase_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_ticket_purchase
+                    references: purchase(id)
+              - column:
+                  name: first_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seat_number
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP

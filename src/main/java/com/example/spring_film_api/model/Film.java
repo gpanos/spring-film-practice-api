@@ -1,6 +1,8 @@
 package com.example.spring_film_api.model;
 
+import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,6 +26,9 @@ public class Film extends BaseEntity {
 
     @OneToMany(mappedBy = "film", fetch = FetchType.LAZY)
     private List<Review> reviews;
+
+    @OneToMany(mappedBy = "film", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Screening> screenings = new ArrayList<>();
 
     @Column(name = "average_rating", nullable = false)
     private Double averageRating = 0.0;
