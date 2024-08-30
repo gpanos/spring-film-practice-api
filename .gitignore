@@ -37,3 +37,6 @@ out/
 .vscode/
 
 public/
+
+.env
+

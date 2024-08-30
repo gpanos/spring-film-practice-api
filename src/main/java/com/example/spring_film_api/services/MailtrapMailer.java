@@ -1,6 +1,18 @@
 package com.example.spring_film_api.services;
 
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
+
 public class MailtrapMailer implements Mailer {
+    private final JavaMailSender mailSender;
+
+    public MailtrapMailer(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
     private String to;
 
     private String from;
@@ -30,9 +42,18 @@ public class MailtrapMailer implements Mailer {
     }
 
     public void send() {
-        System.out.println("Sending email to " + this.to);
-        System.out.println("From: " + this.from);
-        System.out.println("Subject: " + this.subject);
-        System.out.println("Body: " + this.body);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setFrom(from);
+            helper.setSubject(subject);
+            helper.setText(body, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email", e);
+        }
     }
 }
